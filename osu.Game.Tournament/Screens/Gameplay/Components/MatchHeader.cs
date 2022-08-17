@@ -16,6 +16,8 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
     {
         private TeamScoreDisplay teamDisplay1;
         private TeamScoreDisplay teamDisplay2;
+        private TeamScoreDisplay teamDisplay3;
+        private TeamScoreDisplay teamDisplay4;
         private DrawableTournamentHeaderLogo logo;
 
         private bool showScores = true;
@@ -56,7 +58,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
         private void load()
         {
             RelativeSizeAxes = Axes.X;
-            Height = 95;
+            Height = 595;
             Children = new Drawable[]
             {
                 new FillFlowContainer
@@ -93,6 +95,16 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
                 },
                 teamDisplay2 = new TeamScoreDisplay(TeamColour.Blue)
                 {
+                    Anchor = Anchor.TopLeft,
+                    Origin = Anchor.TopLeft,
+                },
+                teamDisplay3 = new TeamScoreDisplay(TeamColour.Green)
+                {
+                    Anchor = Anchor.TopRight,
+                    Origin = Anchor.TopRight,
+                },
+                teamDisplay4 = new TeamScoreDisplay(TeamColour.Yellow)
+                {
                     Anchor = Anchor.TopRight,
                     Origin = Anchor.TopRight,
                 },
@@ -109,6 +121,8 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
         {
             teamDisplay1.ShowScore = showScores;
             teamDisplay2.ShowScore = showScores;
+            teamDisplay3.ShowScore = showScores;
+            teamDisplay4.ShowScore = showScores;
 
             logo.Alpha = showLogo ? 1 : 0;
         }

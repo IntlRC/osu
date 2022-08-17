@@ -63,8 +63,8 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
             {
                 match.StartMatch();
 
-                currentTeamScore.BindTo(teamColour == TeamColour.Red ? match.Team1Score : match.Team2Score);
-                currentTeam.BindTo(teamColour == TeamColour.Red ? match.Team1 : match.Team2);
+                currentTeamScore.BindTo(teamColour == TeamColour.Red ? match.Team1Score : teamColour == TeamColour.Blue ? match.Team2Score : teamColour == TeamColour.Green ? match.Team3Score : match.Team4Score);
+                currentTeam.BindTo(teamColour == TeamColour.Red ? match.Team1 : teamColour == TeamColour.Blue ? match.Team2 : teamColour == TeamColour.Green ? match.Team3 : match.Team4);
             }
 
             // team may change to same team, which means score is not in a good state.

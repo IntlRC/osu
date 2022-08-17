@@ -108,11 +108,15 @@ namespace osu.Game.Tournament
                 {
                     match.Team1.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == match.Team1Acronym);
                     match.Team2.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == match.Team2Acronym);
+                    match.Team3.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == match.Team3Acronym);
+                    match.Team4.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == match.Team4Acronym);
 
                     foreach (var conditional in match.ConditionalMatches)
                     {
                         conditional.Team1.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == conditional.Team1Acronym);
                         conditional.Team2.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == conditional.Team2Acronym);
+                        conditional.Team3.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == conditional.Team3Acronym);
+                        conditional.Team4.Value = ladder.Teams.FirstOrDefault(t => t.Acronym.Value == conditional.Team4Acronym);
                         conditional.Round.Value = match.Round.Value;
                     }
                 }

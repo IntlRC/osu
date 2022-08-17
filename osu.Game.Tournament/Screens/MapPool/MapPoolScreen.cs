@@ -34,8 +34,12 @@ namespace osu.Game.Tournament.Screens.MapPool
 
         private readonly OsuButton buttonRedBan;
         private readonly OsuButton buttonBlueBan;
+        private readonly OsuButton buttonGreenBan;
+        private readonly OsuButton buttonYellowBan;
         private readonly OsuButton buttonRedPick;
         private readonly OsuButton buttonBluePick;
+        private readonly OsuButton buttonGreenPick;
+        private readonly OsuButton buttonYellowPick;
 
         public MapPoolScreen()
         {
@@ -66,26 +70,50 @@ namespace osu.Game.Tournament.Screens.MapPool
                         buttonRedBan = new TourneyButton
                         {
                             RelativeSizeAxes = Axes.X,
-                            Text = "Red Ban",
+                            Text = "Player 1 Ban",
                             Action = () => setMode(TeamColour.Red, ChoiceType.Ban)
                         },
                         buttonBlueBan = new TourneyButton
                         {
                             RelativeSizeAxes = Axes.X,
-                            Text = "Blue Ban",
+                            Text = "Player 2 Ban",
                             Action = () => setMode(TeamColour.Blue, ChoiceType.Ban)
+                        },
+                        buttonGreenBan = new TourneyButton
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            Text = "Player 3 Ban",
+                            Action = () => setMode(TeamColour.Green, ChoiceType.Ban)
+                        },
+                        buttonYellowBan = new TourneyButton
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            Text = "Player 4 Ban",
+                            Action = () => setMode(TeamColour.Yellow, ChoiceType.Ban)
                         },
                         buttonRedPick = new TourneyButton
                         {
                             RelativeSizeAxes = Axes.X,
-                            Text = "Red Pick",
+                            Text = "Player 1 Pick",
                             Action = () => setMode(TeamColour.Red, ChoiceType.Pick)
                         },
                         buttonBluePick = new TourneyButton
                         {
                             RelativeSizeAxes = Axes.X,
-                            Text = "Blue Pick",
+                            Text = "Player 2 Pick",
                             Action = () => setMode(TeamColour.Blue, ChoiceType.Pick)
+                        },
+                        buttonGreenPick = new TourneyButton
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            Text = "Player 3 Pick",
+                            Action = () => setMode(TeamColour.Green, ChoiceType.Pick)
+                        },
+                        buttonYellowPick = new TourneyButton
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            Text = "Player 4 Pick",
+                            Action = () => setMode(TeamColour.Yellow, ChoiceType.Pick)
                         },
                         new ControlPanel.Spacer(),
                         new TourneyButton
@@ -108,7 +136,7 @@ namespace osu.Game.Tournament.Screens.MapPool
 
         private void beatmapChanged(ValueChangedEvent<TournamentBeatmap> beatmap)
         {
-            if (CurrentMatch.Value == null || CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) < 2)
+            if (CurrentMatch.Value == null || CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) < 4)
                 return;
 
             // if bans have already been placed, beatmap changes result in a selection being made autoamtically
@@ -125,20 +153,26 @@ namespace osu.Game.Tournament.Screens.MapPool
 
             buttonRedBan.Colour = setColour(pickColour == TeamColour.Red && pickType == ChoiceType.Ban);
             buttonBlueBan.Colour = setColour(pickColour == TeamColour.Blue && pickType == ChoiceType.Ban);
+            buttonGreenBan.Colour = setColour(pickColour == TeamColour.Green && pickType == ChoiceType.Ban);
+            buttonYellowBan.Colour = setColour(pickColour == TeamColour.Yellow && pickType == ChoiceType.Ban);
+
+
             buttonRedPick.Colour = setColour(pickColour == TeamColour.Red && pickType == ChoiceType.Pick);
             buttonBluePick.Colour = setColour(pickColour == TeamColour.Blue && pickType == ChoiceType.Pick);
+            buttonGreenPick.Colour = setColour(pickColour == TeamColour.Green && pickType == ChoiceType.Pick);
+            buttonYellowPick.Colour = setColour(pickColour == TeamColour.Yellow && pickType == ChoiceType.Pick);
         }
 
         private void setNextMode()
         {
-            const TeamColour roll_winner = TeamColour.Red; //todo: draw from match
+            const TeamColour roll_winner = TeamColour.Yellow; //todo: draw from match
 
-            var nextColour = (CurrentMatch.Value.PicksBans.LastOrDefault()?.Team ?? roll_winner) == TeamColour.Red ? TeamColour.Blue : TeamColour.Red;
+            var nextColour = (CurrentMatch.Value.PicksBans.LastOrDefault()?.Team ?? roll_winner) == TeamColour.Red ? TeamColour.Blue : CurrentMatch.Value.PicksBans.LastOrDefault()?.Team == TeamColour.Blue ? TeamColour.Green : CurrentMatch.Value.PicksBans.LastOrDefault()?.Team == TeamColour.Green ? TeamColour.Yellow : TeamColour.Red;
 
-            if (pickType == ChoiceType.Ban && CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) >= 2)
-                setMode(pickColour, ChoiceType.Pick);
+            if (pickType == ChoiceType.Ban && CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) >= 4)
+                setMode(TeamColour.Red, ChoiceType.Pick);
             else
-                setMode(nextColour, CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) >= 2 ? ChoiceType.Pick : ChoiceType.Ban);
+                setMode(nextColour, CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) >= 4 ? ChoiceType.Pick : ChoiceType.Ban);
         }
 
         protected override bool OnMouseDown(MouseDownEvent e)

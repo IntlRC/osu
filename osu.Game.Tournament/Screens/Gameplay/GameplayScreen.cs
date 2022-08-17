@@ -87,12 +87,6 @@ namespace osu.Game.Tournament.Screens.Gameplay
                         },
                     }
                 },
-                scoreDisplay = new TournamentMatchScoreDisplay
-                {
-                    Y = -147,
-                    Anchor = Anchor.BottomCentre,
-                    Origin = Anchor.TopCentre,
-                },
                 new ControlPanel
                 {
                     Children = new Drawable[]
@@ -154,8 +148,6 @@ namespace osu.Game.Tournament.Screens.Gameplay
         }
 
         private ScheduledDelegate scheduledOperation;
-        private TournamentMatchScoreDisplay scoreDisplay;
-
         private TourneyState lastState;
         private MatchHeader header;
 
@@ -181,7 +173,6 @@ namespace osu.Game.Tournament.Screens.Gameplay
 
                     using (BeginDelayedSequence(300))
                     {
-                        scoreDisplay.FadeIn(100);
                         SongBar.Expanded = true;
                     }
                 }
@@ -189,7 +180,6 @@ namespace osu.Game.Tournament.Screens.Gameplay
                 void contract()
                 {
                     SongBar.Expanded = false;
-                    scoreDisplay.FadeOut(100);
                     using (chat?.BeginDelayedSequence(500))
                         chat?.Expand();
                 }

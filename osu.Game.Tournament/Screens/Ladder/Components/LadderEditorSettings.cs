@@ -27,6 +27,8 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
         private DateTextBox dateTimeBox;
         private SettingsTeamDropdown team1Dropdown;
         private SettingsTeamDropdown team2Dropdown;
+        private SettingsTeamDropdown team3Dropdown;
+        private SettingsTeamDropdown team4Dropdown;
 
         [Resolved]
         private LadderEditorInfo editorInfo { get; set; }
@@ -46,6 +48,8 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             {
                 team1Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 1" },
                 team2Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 2" },
+                team3Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 3" },
+                team4Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 4" },
                 roundDropdown = new SettingsRoundDropdown(ladderInfo.Rounds) { LabelText = "Round" },
                 losersCheckbox = new PlayerCheckbox { LabelText = "Losers Bracket" },
                 dateTimeBox = new DateTextBox { LabelText = "Match Time" },
@@ -62,6 +66,8 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
 
                 team1Dropdown.Current = selection.NewValue?.Team1;
                 team2Dropdown.Current = selection.NewValue?.Team2;
+                team3Dropdown.Current = selection.NewValue?.Team3;
+                team4Dropdown.Current = selection.NewValue?.Team4;
             };
 
             roundDropdown.Current.ValueChanged += round =>

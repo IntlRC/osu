@@ -14,7 +14,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
 {
     public class TeamDisplay : DrawableTournamentTeam
     {
-        private readonly TeamScore score;
+        //private readonly TeamScore score;
 
         private readonly TournamentSpriteTextWithBackground teamText;
 
@@ -42,7 +42,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
         {
             AutoSizeAxes = Axes.Both;
 
-            bool flip = colour == TeamColour.Red;
+            bool flip = colour == TeamColour.Blue || colour == TeamColour.Red;
 
             var anchor = flip ? Anchor.TopLeft : Anchor.TopRight;
 
@@ -63,6 +63,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
                         AutoSizeAxes = Axes.Both,
                         Direction = FillDirection.Horizontal,
                         Spacing = new Vector2(5),
+                        Position = new Vector2(colour == TeamColour.Blue ? 300 : colour == TeamColour.Yellow ? -500 : 0, 0),
                         Children = new Drawable[]
                         {
                             Flag,
@@ -75,28 +76,28 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
                                 Spacing = new Vector2(5),
                                 Children = new Drawable[]
                                 {
-                                    new FillFlowContainer
-                                    {
-                                        AutoSizeAxes = Axes.Both,
-                                        Direction = FillDirection.Horizontal,
-                                        Spacing = new Vector2(5),
-                                        Origin = anchor,
-                                        Anchor = anchor,
-                                        Children = new Drawable[]
-                                        {
-                                            new DrawableTeamHeader(colour)
-                                            {
-                                                Scale = new Vector2(0.75f),
-                                                Origin = anchor,
-                                                Anchor = anchor,
-                                            },
-                                            score = new TeamScore(currentTeamScore, colour, pointsToWin)
-                                            {
-                                                Origin = anchor,
-                                                Anchor = anchor,
-                                            }
-                                        }
-                                    },
+                                    //new FillFlowContainer
+                                    //{
+                                    //    AutoSizeAxes = Axes.Both,
+                                    //    Direction = FillDirection.Horizontal,
+                                    //    Spacing = new Vector2(5),
+                                    //    Origin = anchor,
+                                    //    Anchor = anchor,
+                                    //    Children = new Drawable[]
+                                    //    {
+                                    //        new DrawableTeamHeader(colour)
+                                    //        {
+                                    //            Scale = new Vector2(0.75f),
+                                    //            Origin = anchor,
+                                    //            Anchor = anchor,
+                                    //        },
+                                    //        score = new TeamScore(currentTeamScore, colour, pointsToWin)
+                                    //        {
+                                    //            Origin = anchor,
+                                    //            Anchor = anchor,
+                                    //        }
+                                    //    }
+                                    //},
                                     teamText = new TournamentSpriteTextWithBackground
                                     {
                                         Scale = new Vector2(0.5f),
@@ -126,7 +127,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
 
         private void updateDisplay()
         {
-            score.FadeTo(ShowScore ? 1 : 0, 200);
+            //score.FadeTo(ShowScore ? 1 : 0, 200);
         }
     }
 }

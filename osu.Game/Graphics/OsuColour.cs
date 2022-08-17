@@ -226,6 +226,8 @@ namespace osu.Game.Graphics
 
         public readonly Color4 TeamColourRed = Color4Extensions.FromHex("#AA1414");
         public readonly Color4 TeamColourBlue = Color4Extensions.FromHex("#1462AA");
+        public readonly Color4 TeamColourGreen = Color4Extensions.FromHex("#618A3D");
+        public readonly Color4 TeamColourYellow = Color4Extensions.FromHex("#FFDF00");
 
         // See https://github.com/ppy/osu-web/blob/master/resources/assets/less/colors.less
         public readonly Color4 PurpleLighter = Color4Extensions.FromHex(@"eeeeff");

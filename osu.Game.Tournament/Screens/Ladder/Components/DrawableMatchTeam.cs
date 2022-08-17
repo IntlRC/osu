@@ -78,7 +78,7 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
 
                 completed.BindTo(match.Completed);
                 if (team != null)
-                    score.BindTo(team == match.Team1.Value ? match.Team1Score : match.Team2Score);
+                    score.BindTo(team == match.Team1.Value ? match.Team1Score : team == match.Team2.Value ? match.Team2Score : team == match.Team3.Value ? match.Team3Score : match.Team4Score);
             }
         }
 

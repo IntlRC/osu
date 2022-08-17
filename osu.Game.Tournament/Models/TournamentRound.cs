@@ -19,7 +19,7 @@ namespace osu.Game.Tournament.Models
         public readonly Bindable<string> Name = new Bindable<string>(string.Empty);
         public readonly Bindable<string> Description = new Bindable<string>(string.Empty);
 
-        public readonly BindableInt BestOf = new BindableInt(9) { Default = 9, MinValue = 3, MaxValue = 23 };
+        public readonly BindableInt BestOf = new BindableInt(9) { Default = 111, MinValue = 3, MaxValue = 111 };
 
         [JsonProperty]
         public readonly BindableList<RoundBeatmap> Beatmaps = new BindableList<RoundBeatmap>();

@@ -25,10 +25,12 @@ namespace osu.Game.Tournament
     [Cached]
     public class TournamentGame : TournamentGameBase
     {
-        public static ColourInfo GetTeamColour(TeamColour teamColour) => teamColour == TeamColour.Red ? COLOUR_RED : COLOUR_BLUE;
+        public static ColourInfo GetTeamColour(TeamColour teamColour) => teamColour == TeamColour.Red ? COLOUR_RED : teamColour == TeamColour.Blue ? COLOUR_BLUE : teamColour == TeamColour.Green ? COLOUR_GREEN : COLOUR_YELLOW;
 
         public static readonly Color4 COLOUR_RED = new OsuColour().TeamColourRed;
         public static readonly Color4 COLOUR_BLUE = new OsuColour().TeamColourBlue;
+        public static readonly Color4 COLOUR_GREEN = new OsuColour().TeamColourGreen;
+        public static readonly Color4 COLOUR_YELLOW = new OsuColour().TeamColourYellow;
 
         public static readonly Color4 ELEMENT_BACKGROUND_COLOUR = Color4Extensions.FromHex("#fff");
         public static readonly Color4 ELEMENT_FOREGROUND_COLOUR = Color4Extensions.FromHex("#000");

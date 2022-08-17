@@ -28,6 +28,8 @@ namespace osu.Game.Tournament.Models
                 List<string> acronyms = new List<string>();
                 if (Team1Acronym != null) acronyms.Add(Team1Acronym);
                 if (Team2Acronym != null) acronyms.Add(Team2Acronym);
+                if (Team3Acronym != null) acronyms.Add(Team3Acronym);
+                if (Team4Acronym != null) acronyms.Add(Team4Acronym);
                 return acronyms;
             }
         }
@@ -45,6 +47,20 @@ namespace osu.Game.Tournament.Models
         public string Team2Acronym;
 
         public readonly Bindable<int?> Team2Score = new Bindable<int?>();
+
+        [JsonIgnore]
+        public readonly Bindable<TournamentTeam> Team3 = new Bindable<TournamentTeam>();
+
+        public string Team3Acronym;
+
+        public readonly Bindable<int?> Team3Score = new Bindable<int?>();
+
+        [JsonIgnore]
+        public readonly Bindable<TournamentTeam> Team4 = new Bindable<TournamentTeam>();
+
+        public string Team4Acronym;
+
+        public readonly Bindable<int?> Team4Score = new Bindable<int?>();
 
         public readonly Bindable<bool> Completed = new Bindable<bool>();
 
@@ -77,13 +93,17 @@ namespace osu.Game.Tournament.Models
         {
             Team1.BindValueChanged(t => Team1Acronym = t.NewValue?.Acronym.Value, true);
             Team2.BindValueChanged(t => Team2Acronym = t.NewValue?.Acronym.Value, true);
+            Team3.BindValueChanged(t => Team3Acronym = t.NewValue?.Acronym.Value, true);
+            Team4.BindValueChanged(t => Team4Acronym = t.NewValue?.Acronym.Value, true);
         }
 
-        public TournamentMatch(TournamentTeam team1 = null, TournamentTeam team2 = null)
+        public TournamentMatch(TournamentTeam team1 = null, TournamentTeam team2 = null, TournamentTeam team3 = null, TournamentTeam team4 = null)
             : this()
         {
             Team1.Value = team1;
             Team2.Value = team2;
+            Team3.Value = team3;
+            Team4.Value = team4;
         }
 
         [JsonIgnore]
@@ -92,7 +112,7 @@ namespace osu.Game.Tournament.Models
         [JsonIgnore]
         public TournamentTeam Loser => !Completed.Value ? null : Team1Score.Value > Team2Score.Value ? Team2.Value : Team1.Value;
 
-        public TeamColour WinnerColour => Winner == Team1.Value ? TeamColour.Red : TeamColour.Blue;
+        public TeamColour WinnerColour => Winner == Team1.Value ? TeamColour.Red : (Winner == Team2.Value ? TeamColour.Blue : (Winner == Team3.Value ? TeamColour.Green : TeamColour.Yellow));
 
         public int PointsToWin => Round.Value?.BestOf.Value / 2 + 1 ?? 0;
 
@@ -103,6 +123,8 @@ namespace osu.Game.Tournament.Models
         {
             Team1Score.Value = null;
             Team2Score.Value = null;
+            Team3Score.Value = null;
+            Team4Score.Value = null;
         }
 
         /// <summary>
@@ -115,6 +137,8 @@ namespace osu.Game.Tournament.Models
 
             Team1Score.Value = 0;
             Team2Score.Value = 0;
+            Team3Score.Value = 0;
+            Team4Score.Value = 0;
         }
 
         public void Reset()
@@ -122,6 +146,8 @@ namespace osu.Game.Tournament.Models
             CancelMatchStart();
             Team1.Value = null;
             Team2.Value = null;
+            Team3.Value = null;
+            Team4.Value = null;
             Completed.Value = false;
             PicksBans.Clear();
         }

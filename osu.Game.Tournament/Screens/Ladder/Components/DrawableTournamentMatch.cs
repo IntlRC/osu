@@ -75,8 +75,12 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
 
             boundReference(match.Team1).BindValueChanged(_ => updateTeams());
             boundReference(match.Team2).BindValueChanged(_ => updateTeams());
+            boundReference(match.Team3).BindValueChanged(_ => updateTeams());
+            boundReference(match.Team4).BindValueChanged(_ => updateTeams());
             boundReference(match.Team1Score).BindValueChanged(_ => updateWinConditions());
             boundReference(match.Team2Score).BindValueChanged(_ => updateWinConditions());
+            boundReference(match.Team3Score).BindValueChanged(_ => updateWinConditions());
+            boundReference(match.Team4Score).BindValueChanged(_ => updateWinConditions());
             boundReference(match.Round).BindValueChanged(_ =>
             {
                 updateWinConditions();
@@ -168,11 +172,23 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
                 if (Match.Progression.Value != null && Match.Progression.Value.Team2.Value == Match.Team2.Value)
                     Match.Progression.Value.Team2.Value = null;
 
+                if (Match.Progression.Value != null && Match.Progression.Value.Team3.Value == Match.Team3.Value)
+                    Match.Progression.Value.Team3.Value = null;
+
+                if (Match.Progression.Value != null && Match.Progression.Value.Team4.Value == Match.Team4.Value)
+                    Match.Progression.Value.Team4.Value = null;
+
                 if (Match.LosersProgression.Value != null && Match.LosersProgression.Value.Team1.Value == Match.Team1.Value)
                     Match.LosersProgression.Value.Team1.Value = null;
 
                 if (Match.LosersProgression.Value != null && Match.LosersProgression.Value.Team2.Value == Match.Team2.Value)
                     Match.LosersProgression.Value.Team2.Value = null;
+
+                if (Match.LosersProgression.Value != null && Match.LosersProgression.Value.Team3.Value == Match.Team3.Value)
+                    Match.LosersProgression.Value.Team3.Value = null;
+
+                if (Match.LosersProgression.Value != null && Match.LosersProgression.Value.Team4.Value == Match.Team4.Value)
+                    Match.LosersProgression.Value.Team4.Value = null;
             }
             else
             {
@@ -196,6 +212,10 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
                 destinationTeam = destination.Team1;
             else if (destination.Team2.Value == team)
                 destinationTeam = destination.Team2;
+            else if (destination.Team3.Value == team)
+                destinationTeam = destination.Team3;
+            else if (destination.Team4.Value == team)
+                destinationTeam = destination.Team4;
             else
             {
                 destinationTeam = progressionAbove ? destination.Team2 : destination.Team1;
@@ -238,7 +258,7 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
 
             // todo: teams may need to be bindable for transitions at a later point.
 
-            if (Match.Team1.Value == null || Match.Team2.Value == null)
+            if (Match.Team1.Value == null || Match.Team2.Value == null || Match.Team3.Value == null || Match.Team4.Value == null)
                 Match.CancelMatchStart();
 
             if (Match.ConditionalMatches.Count > 0)
@@ -247,8 +267,10 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
                 {
                     bool team1Match = conditional.Acronyms.Contains(Match.Team1Acronym);
                     bool team2Match = conditional.Acronyms.Contains(Match.Team2Acronym);
+                    bool team3Match = conditional.Acronyms.Contains(Match.Team3Acronym);
+                    bool team4Match = conditional.Acronyms.Contains(Match.Team4Acronym);
 
-                    if (team1Match && team2Match)
+                    if (team1Match && team2Match && team3Match && team4Match)
                         Match.Date.Value = conditional.Date.Value;
                 }
             }
@@ -256,7 +278,9 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             Flow.Children = new[]
             {
                 new DrawableMatchTeam(Match.Team1.Value, Match, Match.Losers.Value),
-                new DrawableMatchTeam(Match.Team2.Value, Match, Match.Losers.Value)
+                new DrawableMatchTeam(Match.Team2.Value, Match, Match.Losers.Value),
+                new DrawableMatchTeam(Match.Team3.Value, Match, Match.Losers.Value),
+                new DrawableMatchTeam(Match.Team4.Value, Match, Match.Losers.Value)
             };
 
             SchedulerAfterChildren.Add(() => Scheduler.Add(updateProgression));

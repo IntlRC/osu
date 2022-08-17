@@ -118,8 +118,8 @@ namespace osu.Game.Tournament.Screens.Drawings
 
                             Padding = new MarginPadding
                             {
-                                Top = 35f,
-                                Bottom = 35f
+                                Top = 100f,
+                                Bottom = 100f
                             }
                         },
                         // Scrolling teams

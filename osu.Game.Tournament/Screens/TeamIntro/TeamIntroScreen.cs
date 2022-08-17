@@ -45,9 +45,13 @@ namespace osu.Game.Tournament.Screens.TeamIntro
             if (match.NewValue == null)
                 return;
 
-            const float y_flag_offset = 292;
+            const float y_flag_offset1 = 300;
 
-            const float y_offset = 460;
+            const float y_offset1 = 360;
+
+            const float y_flag_offset2 = 500;
+
+            const float y_offset2 = 560;
 
             mainContainer.Children = new Drawable[]
             {
@@ -55,21 +59,39 @@ namespace osu.Game.Tournament.Screens.TeamIntro
                 {
                     Position = new Vector2(100, 100)
                 },
+
                 new DrawableTeamFlag(match.NewValue.Team1.Value)
                 {
-                    Position = new Vector2(165, y_flag_offset),
+                    Position = new Vector2(100, y_flag_offset1),
                 },
                 new DrawableTeamWithPlayers(match.NewValue.Team1.Value, TeamColour.Red)
                 {
-                    Position = new Vector2(165, y_offset),
+                    Position = new Vector2(100, y_offset1),
                 },
                 new DrawableTeamFlag(match.NewValue.Team2.Value)
                 {
-                    Position = new Vector2(740, y_flag_offset),
+                    Position = new Vector2(387, y_flag_offset2),
                 },
                 new DrawableTeamWithPlayers(match.NewValue.Team2.Value, TeamColour.Blue)
                 {
-                    Position = new Vector2(740, y_offset),
+                    Position = new Vector2(387, y_offset2),
+                },
+
+                new DrawableTeamFlag(match.NewValue.Team3.Value)
+                {
+                    Position = new Vector2(675, y_flag_offset1),
+                },
+                new DrawableTeamWithPlayers(match.NewValue.Team3.Value, TeamColour.Blue)
+                {
+                    Position = new Vector2(675, y_offset1),
+                },
+                new DrawableTeamFlag(match.NewValue.Team4.Value)
+                {
+                    Position = new Vector2(962, y_flag_offset2),
+                },
+                new DrawableTeamWithPlayers(match.NewValue.Team4.Value, TeamColour.Blue)
+                {
+                    Position = new Vector2(962, y_offset2),
                 },
             };
         }

@@ -109,9 +109,9 @@ namespace osu.Game.Tournament.Screens.Schedule
 
         private void matchChanged(ValueChangedEvent<TournamentMatch> match)
         {
-            var upcoming = ladder.Matches.Where(p => !p.Completed.Value && p.Team1.Value != null && p.Team2.Value != null && Math.Abs(p.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < 4);
+            var upcoming = ladder.Matches.Where(p => !p.Completed.Value && p.Team1.Value != null && p.Team2.Value != null && p.Team3.Value != null && p.Team4.Value != null && Math.Abs(p.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < 4);
             var conditionals = ladder
-                               .Matches.Where(p => !p.Completed.Value && (p.Team1.Value == null || p.Team2.Value == null) && Math.Abs(p.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < 4)
+                               .Matches.Where(p => !p.Completed.Value && (p.Team1.Value == null || p.Team2.Value == null || p.Team3.Value == null || p.Team4.Value == null) && Math.Abs(p.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < 4)
                                .SelectMany(m => m.ConditionalMatches.Where(cp => m.Acronyms.TrueForAll(a => cp.Acronyms.Contains(a))));
 
             upcoming = upcoming.Concat(conditionals);
@@ -138,9 +138,9 @@ namespace osu.Game.Tournament.Screens.Schedule
                                 new ScheduleContainer("recent matches")
                                 {
                                     RelativeSizeAxes = Axes.Both,
-                                    Width = 0.4f,
+                                    Width = 0.5f,
                                     ChildrenEnumerable = ladder.Matches
-                                                               .Where(p => p.Completed.Value && p.Team1.Value != null && p.Team2.Value != null
+                                                               .Where(p => p.Completed.Value && p.Team1.Value != null && p.Team2.Value != null && p.Team3.Value != null && p.Team4.Value != null
                                                                            && Math.Abs(p.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < 4)
                                                                .OrderByDescending(p => p.Date.Value)
                                                                .Take(8)
@@ -187,7 +187,7 @@ namespace osu.Game.Tournament.Screens.Schedule
                         {
                             Anchor = Anchor.CentreLeft,
                             Origin = Anchor.CentreLeft,
-                            Text = match.NewValue.Team1.Value?.FullName + " vs " + match.NewValue.Team2.Value?.FullName,
+                            Text = match.NewValue.Team1.Value?.Acronym + " vs " + match.NewValue.Team2.Value?.Acronym + " vs " + match.NewValue.Team3.Value?.Acronym + " vs " + match.NewValue.Team4.Value?.Acronym,
                             Font = OsuFont.Torus.With(size: 24, weight: FontWeight.SemiBold)
                         },
                         new FillFlowContainer
