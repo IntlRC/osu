@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Framework.Extensions.ObjectExtensions;
 using osu.Game.Beatmaps;
 using osu.Game.Extensions;
 using osu.Game.Online.API.Requests.Responses;
@@ -21,6 +20,10 @@ namespace osu.Game.Tournament.Models
         public double Length { get; set; }
 
         public double StarRating { get; set; }
+
+        public int EndTimeObjectCount { get; set; }
+
+        public int TotalObjectCount { get; set; }
 
         public IBeatmapMetadataInfo Metadata { get; set; } = new BeatmapMetadata();
 
@@ -41,7 +44,9 @@ namespace osu.Game.Tournament.Models
             StarRating = beatmap.StarRating;
             Metadata = beatmap.Metadata;
             Difficulty = beatmap.Difficulty;
-            Covers = beatmap.BeatmapSet.AsNonNull().Covers;
+            Covers = beatmap.BeatmapSet?.Covers ?? new BeatmapSetOnlineCovers();
+            EndTimeObjectCount = beatmap.EndTimeObjectCount;
+            TotalObjectCount = beatmap.TotalObjectCount;
         }
 
         public bool Equals(IBeatmapInfo? other) => other is TournamentBeatmap b && this.MatchesOnlineID(b);

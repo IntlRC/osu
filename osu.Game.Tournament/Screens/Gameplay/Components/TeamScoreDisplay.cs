@@ -1,8 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -13,19 +11,26 @@ using osuTK.Input;
 
 namespace osu.Game.Tournament.Screens.Gameplay.Components
 {
-    public class TeamScoreDisplay : CompositeDrawable
+    public partial class TeamScoreDisplay : CompositeDrawable
     {
         private readonly TeamColour teamColour;
 
-        private readonly Bindable<TournamentMatch> currentMatch = new Bindable<TournamentMatch>();
-        private readonly Bindable<TournamentTeam> currentTeam = new Bindable<TournamentTeam>();
+        private readonly Bindable<TournamentMatch?> currentMatch = new Bindable<TournamentMatch?>();
+        private readonly Bindable<TournamentTeam?> currentTeam = new Bindable<TournamentTeam?>();
         private readonly Bindable<int?> currentTeamScore = new Bindable<int?>();
 
-        private TeamDisplay teamDisplay;
+        private TeamDisplay? teamDisplay;
 
         public bool ShowScore
         {
-            set => teamDisplay.ShowScore = value;
+            get => teamDisplay?.ShowScore ?? false;
+            set
+            {
+                if (teamDisplay != null)
+                {
+                    teamDisplay.ShowScore = value;
+                }
+            }
         }
 
         public TeamScoreDisplay(TeamColour teamColour)
@@ -47,7 +52,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
             updateMatch();
         }
 
-        private void matchChanged(ValueChangedEvent<TournamentMatch> match)
+        private void matchChanged(ValueChangedEvent<TournamentMatch?> match)
         {
             currentTeamScore.UnbindBindings();
             currentTeam.UnbindBindings();
@@ -77,7 +82,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
             switch (e.Button)
             {
                 case MouseButton.Left:
-                    if (currentTeamScore.Value < currentMatch.Value.PointsToWin)
+                    if (currentTeamScore.Value < currentMatch.Value?.PointsToWin)
                         currentTeamScore.Value++;
                     return true;
 
@@ -90,12 +95,16 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
             return base.OnMouseDown(e);
         }
 
-        private void teamChanged(ValueChangedEvent<TournamentTeam> team)
+        private void teamChanged(ValueChangedEvent<TournamentTeam?> team)
         {
+            bool wasShowingScores = teamDisplay?.ShowScore ?? false;
+
             InternalChildren = new Drawable[]
             {
                 teamDisplay = new TeamDisplay(team.NewValue, teamColour, currentTeamScore, currentMatch.Value?.PointsToWin ?? 0),
             };
+
+            teamDisplay.ShowScore = wasShowingScores;
         }
     }
 }

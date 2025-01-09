@@ -33,7 +33,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Gameplay
 {
     [HeadlessTest]
-    public class TestSceneStoryboardSamples : OsuTestScene, IStorageResourceProvider
+    public partial class TestSceneStoryboardSamples : OsuTestScene, IStorageResourceProvider
     {
         [Resolved]
         private OsuConfigManager config { get; set; }
@@ -84,12 +84,15 @@ namespace osu.Game.Tests.Gameplay
                 });
             });
 
-            AddStep("reset clock", () => gameplayContainer.Start());
+            AddStep("reset clock", () => gameplayContainer.Reset(startClock: true));
 
             AddUntilStep("sample played", () => sample.RequestedPlaying);
             AddUntilStep("sample has lifetime end", () => sample.LifetimeEnd < double.MaxValue);
         }
 
+        /// <summary>
+        /// Sample at 0ms, start time at 1000ms (so the sample should not be played).
+        /// </summary>
         [Test]
         public void TestSampleHasLifetimeEndWithInitialClockTime()
         {
@@ -104,12 +107,13 @@ namespace osu.Game.Tests.Gameplay
 
                 Add(gameplayContainer = new MasterGameplayClockContainer(working, start_time)
                 {
-                    StartTime = start_time,
                     Child = new FrameStabilityContainer
                     {
                         Child = sample = new DrawableStoryboardSample(new StoryboardSampleInfo(string.Empty, 0, 1))
                     }
                 });
+
+                gameplayContainer.Reset(start_time);
             });
 
             AddStep("start time", () => gameplayContainer.Start());
@@ -122,7 +126,7 @@ namespace osu.Game.Tests.Gameplay
         public void TestSamplePlaybackWithBeatmapHitsoundsOff()
         {
             GameplayClockContainer gameplayContainer = null;
-            TestDrawableStoryboardSample sample = null;
+            DrawableStoryboardSample sample = null;
 
             AddStep("disable beatmap hitsounds", () => config.SetValue(OsuSetting.BeatmapHitsounds, false));
 
@@ -137,13 +141,13 @@ namespace osu.Game.Tests.Gameplay
                     Child = beatmapSkinSourceContainer
                 });
 
-                beatmapSkinSourceContainer.Add(sample = new TestDrawableStoryboardSample(new StoryboardSampleInfo("test-sample", 1, 1))
+                beatmapSkinSourceContainer.Add(sample = new DrawableStoryboardSample(new StoryboardSampleInfo("test-sample", 1, 1))
                 {
                     Clock = gameplayContainer
                 });
             });
 
-            AddStep("start", () => gameplayContainer.Start());
+            AddStep("reset clock", () => gameplayContainer.Reset(startClock: true));
 
             AddUntilStep("sample played", () => sample.IsPlayed);
             AddUntilStep("sample has lifetime end", () => sample.LifetimeEnd < double.MaxValue);
@@ -195,21 +199,13 @@ namespace osu.Game.Tests.Gameplay
             protected internal override ISkin GetSkin() => new TestSkin("test-sample", resources);
         }
 
-        private class TestDrawableStoryboardSample : DrawableStoryboardSample
-        {
-            public TestDrawableStoryboardSample(StoryboardSampleInfo sampleInfo)
-                : base(sampleInfo)
-            {
-            }
-        }
-
         #region IResourceStorageProvider
 
         public IRenderer Renderer => host.Renderer;
         public AudioManager AudioManager => Audio;
-        public IResourceStore<byte[]> Files => null;
+        public IResourceStore<byte[]> Files => null!;
         public new IResourceStore<byte[]> Resources => base.Resources;
-        public RealmAccess RealmAccess => null;
+        public RealmAccess RealmAccess => null!;
         public IResourceStore<TextureUpload> CreateTextureLoaderStore(IResourceStore<byte[]> underlyingStore) => null;
 
         #endregion

@@ -4,10 +4,12 @@
 #nullable disable
 
 using System;
+using JetBrains.Annotations;
 using osu.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Audio;
 using osu.Framework.Audio.Sample;
+using osu.Framework.Audio.Track;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
@@ -15,6 +17,7 @@ using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
 using osu.Framework.Utils;
+using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
@@ -25,15 +28,19 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play
 {
-    public class SkipOverlay : CompositeDrawable, IKeyBindingHandler<GlobalAction>
+    public partial class SkipOverlay : BeatSyncedContainer, IKeyBindingHandler<GlobalAction>
     {
+        /// <summary>
+        /// The total number of successful skips performed by this overlay.
+        /// </summary>
+        public int SkipCount { get; private set; }
+
         private readonly double startTime;
 
         public Action RequestSkip;
-
         private Button button;
         private ButtonContainer buttonContainer;
-        private Box remainingTimeBox;
+        private Circle remainingTimeBox;
 
         private FadeContainer fadeContainer;
         private double displayTime;
@@ -45,7 +52,6 @@ namespace osu.Game.Screens.Play
         private IGameplayClock gameplayClock { get; set; }
 
         internal bool IsButtonVisible => fadeContainer.State == Visibility.Visible && buttonContainer.State.Value == Visibility.Visible;
-
         public override bool ReceivePositionalInputAt(Vector2 screenSpacePos) => true;
 
         /// <summary>
@@ -81,13 +87,13 @@ namespace osu.Game.Screens.Play
                             Anchor = Anchor.Centre,
                             Origin = Anchor.Centre,
                         },
-                        remainingTimeBox = new Box
+                        remainingTimeBox = new Circle
                         {
                             Height = 5,
-                            RelativeSizeAxes = Axes.X,
-                            Colour = colours.Yellow,
                             Anchor = Anchor.BottomCentre,
                             Origin = Anchor.BottomCentre,
+                            Colour = colours.Yellow,
+                            RelativeSizeAxes = Axes.X
                         }
                     }
                 }
@@ -114,39 +120,58 @@ namespace osu.Game.Screens.Play
         {
             base.LoadComplete();
 
+            displayTime = gameplayClock.CurrentTime;
+
             // skip is not required if there is no extra "empty" time to skip.
             // we may need to remove this if rewinding before the initial player load position becomes a thing.
-            if (fadeOutBeginTime < gameplayClock.CurrentTime)
+            if (fadeOutBeginTime <= displayTime)
             {
                 Expire();
                 return;
             }
 
-            button.Action = () => RequestSkip?.Invoke();
-            displayTime = gameplayClock.CurrentTime;
+            button.Action = () =>
+            {
+                SkipCount++;
+                RequestSkip?.Invoke();
+            };
 
             fadeContainer.TriggerShow();
-
-            if (skipQueued)
-            {
-                Scheduler.AddDelayed(() => button.TriggerClick(), 200);
-                skipQueued = false;
-            }
         }
 
+        /// <summary>
+        /// Triggers an "automated" skip to happen as soon as available.
+        /// </summary>
         public void SkipWhenReady()
         {
-            if (IsLoaded)
+            if (skipQueued) return;
+
+            skipQueued = true;
+            attemptNextSkip();
+
+            void attemptNextSkip() => Scheduler.AddDelayed(() =>
+            {
+                if (!button.Enabled.Value)
+                {
+                    skipQueued = false;
+                    return;
+                }
+
                 button.TriggerClick();
-            else
-                skipQueued = true;
+                attemptNextSkip();
+            }, 200);
         }
 
         protected override void Update()
         {
             base.Update();
 
-            double progress = fadeOutBeginTime <= displayTime ? 1 : Math.Max(0, 1 - (gameplayClock.CurrentTime - displayTime) / (fadeOutBeginTime - displayTime));
+            // This case causes an immediate expire in `LoadComplete`, but `Update` may run once after that.
+            // Avoid div-by-zero below.
+            if (fadeOutBeginTime <= displayTime)
+                return;
+
+            double progress = Math.Max(0, 1 - (gameplayClock.CurrentTime - displayTime) / (fadeOutBeginTime - displayTime));
 
             remainingTimeBox.Width = (float)Interpolation.Lerp(remainingTimeBox.Width, progress, Math.Clamp(Time.Elapsed / 40, 0, 1));
 
@@ -185,8 +210,21 @@ namespace osu.Game.Screens.Play
         {
         }
 
-        public class FadeContainer : Container, IStateful<Visibility>
+        protected override void OnNewBeat(int beatIndex, TimingControlPoint timingPoint, EffectControlPoint effectPoint, ChannelAmplitudes amplitudes)
         {
+            base.OnNewBeat(beatIndex, timingPoint, effectPoint, amplitudes);
+
+            if (fadeOutBeginTime <= gameplayClock.CurrentTime)
+                return;
+
+            float progress = (float)(gameplayClock.CurrentTime - displayTime) / (float)(fadeOutBeginTime - displayTime);
+            float newWidth = 1 - Math.Clamp(progress, 0, 1);
+            remainingTimeBox.ResizeWidthTo(newWidth, timingPoint.BeatLength * 3.5, Easing.OutQuint);
+        }
+
+        public partial class FadeContainer : Container, IStateful<Visibility>
+        {
+            [CanBeNull]
             public event Action<Visibility> StateChanged;
 
             private Visibility state;
@@ -263,14 +301,14 @@ namespace osu.Game.Screens.Play
             public override void Show() => State = Visibility.Visible;
         }
 
-        private class ButtonContainer : VisibilityContainer
+        private partial class ButtonContainer : VisibilityContainer
         {
             protected override void PopIn() => this.FadeIn(fade_time);
 
             protected override void PopOut() => this.FadeOut(fade_time);
         }
 
-        private class Button : OsuClickableContainer
+        private partial class Button : OsuClickableContainer
         {
             private Color4 colourNormal;
             private Color4 colourHover;

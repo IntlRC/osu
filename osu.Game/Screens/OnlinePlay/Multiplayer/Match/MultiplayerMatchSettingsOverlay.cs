@@ -1,12 +1,10 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using JetBrains.Annotations;
+using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions;
@@ -19,6 +17,7 @@ using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
+using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Online.Multiplayer;
 using osu.Game.Online.Rooms;
 using osu.Game.Overlays;
@@ -28,16 +27,22 @@ using Container = osu.Framework.Graphics.Containers.Container;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 {
-    public class MultiplayerMatchSettingsOverlay : RoomSettingsOverlay
+    public partial class MultiplayerMatchSettingsOverlay : RoomSettingsOverlay
     {
-        private MatchSettings settings;
+        public required Bindable<PlaylistItem?> SelectedItem
+        {
+            get => selectedItem;
+            set => selectedItem.Current = value;
+        }
 
         protected override OsuButton SubmitButton => settings.ApplyButton;
+        protected override bool IsLoading => ongoingOperationTracker.InProgress.Value;
 
         [Resolved]
-        private OngoingOperationTracker ongoingOperationTracker { get; set; }
+        private OngoingOperationTracker ongoingOperationTracker { get; set; } = null!;
 
-        protected override bool IsLoading => ongoingOperationTracker.InProgress.Value;
+        private readonly BindableWithCurrent<PlaylistItem?> selectedItem = new BindableWithCurrent<PlaylistItem?>();
+        private MatchSettings settings = null!;
 
         public MultiplayerMatchSettingsOverlay(Room room)
             : base(room)
@@ -46,58 +51,57 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 
         protected override void SelectBeatmap() => settings.SelectBeatmap();
 
-        protected override OnlinePlayComposite CreateSettings(Room room) => settings = new MatchSettings(room)
+        protected override Drawable CreateSettings(Room room) => settings = new MatchSettings(room)
         {
             RelativeSizeAxes = Axes.Both,
             RelativePositionAxes = Axes.Y,
-            SettingsApplied = Hide
+            SettingsApplied = Hide,
+            SelectedItem = { BindTarget = SelectedItem }
         };
 
-        protected class MatchSettings : OnlinePlayComposite
+        protected partial class MatchSettings : CompositeDrawable
         {
             private const float disabled_alpha = 0.2f;
 
-            public Action SettingsApplied;
+            public override bool IsPresent => base.IsPresent || Scheduler.HasPendingTasks;
 
-            public OsuTextBox NameField, MaxParticipantsField;
-            public MatchTypePicker TypePicker;
-            public OsuEnumDropdown<QueueMode> QueueModeDropdown;
-            public OsuTextBox PasswordTextBox;
-            public TriangleButton ApplyButton;
+            public readonly Bindable<PlaylistItem?> SelectedItem = new Bindable<PlaylistItem?>();
+            public Action? SettingsApplied;
 
-            public OsuSpriteText ErrorText;
+            public OsuTextBox NameField = null!;
+            public OsuTextBox MaxParticipantsField = null!;
+            public MatchTypePicker TypePicker = null!;
+            public OsuEnumDropdown<QueueMode> QueueModeDropdown = null!;
+            public OsuTextBox PasswordTextBox = null!;
+            public OsuCheckbox AutoSkipCheckbox = null!;
+            public RoundedButton ApplyButton = null!;
+            public OsuSpriteText ErrorText = null!;
 
-            private OsuEnumDropdown<StartMode> startModeDropdown;
-            private OsuSpriteText typeLabel;
-            private LoadingLayer loadingLayer;
+            private OsuEnumDropdown<StartMode> startModeDropdown = null!;
+            private OsuSpriteText typeLabel = null!;
+            private LoadingLayer loadingLayer = null!;
 
-            public void SelectBeatmap()
-            {
-                if (matchSubScreen.IsCurrentScreen())
-                    matchSubScreen.Push(new MultiplayerMatchSongSelect(matchSubScreen.Room));
-            }
-
-            [Resolved]
-            private MultiplayerMatchSubScreen matchSubScreen { get; set; }
+            public void SelectBeatmap() => selectBeatmapButton.TriggerClick();
 
             [Resolved]
-            private IRoomManager manager { get; set; }
+            private MultiplayerMatchSubScreen matchSubScreen { get; set; } = null!;
 
             [Resolved]
-            private MultiplayerClient client { get; set; }
+            private IRoomManager manager { get; set; } = null!;
 
             [Resolved]
-            private OngoingOperationTracker ongoingOperationTracker { get; set; }
+            private MultiplayerClient client { get; set; } = null!;
+
+            [Resolved]
+            private OngoingOperationTracker ongoingOperationTracker { get; set; } = null!;
 
             private readonly IBindable<bool> operationInProgress = new BindableBool();
-
-            [CanBeNull]
-            private IDisposable applyingSettingsOperation;
-
             private readonly Room room;
 
-            private Drawable playlistContainer;
-            private DrawableRoomPlaylist drawablePlaylist;
+            private IDisposable? applyingSettingsOperation;
+            private Drawable playlistContainer = null!;
+            private DrawableRoomPlaylist drawablePlaylist = null!;
+            private RoundedButton selectBeatmapButton = null!;
 
             public MatchSettings(Room room)
             {
@@ -249,6 +253,13 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                                                                         LengthLimit = 255,
                                                                     },
                                                                 },
+                                                                new Section("Other")
+                                                                {
+                                                                    Child = AutoSkipCheckbox = new OsuCheckbox
+                                                                    {
+                                                                        LabelText = "Automatically skip the beatmap intro"
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     },
@@ -267,14 +278,19 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                                                         drawablePlaylist = new DrawableRoomPlaylist
                                                         {
                                                             RelativeSizeAxes = Axes.X,
-                                                            Height = DrawableRoomPlaylistItem.HEIGHT
+                                                            Height = DrawableRoomPlaylistItem.HEIGHT,
+                                                            SelectedItem = { BindTarget = SelectedItem }
                                                         },
-                                                        new PurpleTriangleButton
+                                                        selectBeatmapButton = new RoundedButton
                                                         {
                                                             RelativeSizeAxes = Axes.X,
                                                             Height = 40,
                                                             Text = "Select beatmap",
-                                                            Action = SelectBeatmap
+                                                            Action = () =>
+                                                            {
+                                                                if (matchSubScreen.IsCurrentScreen())
+                                                                    matchSubScreen.Push(new MultiplayerMatchSongSelect(matchSubScreen.Room));
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -309,7 +325,7 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                                             Padding = new MarginPadding { Horizontal = OsuScreen.HORIZONTAL_OVERFLOW_PADDING },
                                             Children = new Drawable[]
                                             {
-                                                ApplyButton = new CreateOrUpdateButton
+                                                ApplyButton = new CreateOrUpdateButton(room)
                                                 {
                                                     Anchor = Anchor.BottomCentre,
                                                     Origin = Anchor.BottomCentre,
@@ -336,13 +352,6 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                 };
 
                 TypePicker.Current.BindValueChanged(type => typeLabel.Text = type.NewValue.GetLocalisableDescription(), true);
-                RoomName.BindValueChanged(name => NameField.Text = name.NewValue, true);
-                Type.BindValueChanged(type => TypePicker.Current.Value = type.NewValue, true);
-                MaxParticipants.BindValueChanged(count => MaxParticipantsField.Text = count.NewValue?.ToString(), true);
-                RoomID.BindValueChanged(roomId => playlistContainer.Alpha = roomId.NewValue == null ? 1 : 0, true);
-                Password.BindValueChanged(password => PasswordTextBox.Text = password.NewValue ?? string.Empty, true);
-                QueueMode.BindValueChanged(mode => QueueModeDropdown.Current.Value = mode.NewValue, true);
-                AutoStartDuration.BindValueChanged(duration => startModeDropdown.Current.Value = (StartMode)(int)duration.NewValue.TotalSeconds, true);
 
                 operationInProgress.BindTo(ongoingOperationTracker.InProgress);
                 operationInProgress.BindValueChanged(v =>
@@ -358,15 +367,88 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
             {
                 base.LoadComplete();
 
-                drawablePlaylist.Items.BindTo(Playlist);
-                drawablePlaylist.SelectedItem.BindTo(CurrentPlaylistItem);
+                room.PropertyChanged += onRoomPropertyChanged;
+
+                updateRoomName();
+                updateRoomType();
+                updateRoomQueueMode();
+                updateRoomPassword();
+                updateRoomAutoSkip();
+                updateRoomMaxParticipants();
+                updateRoomAutoStartDuration();
+                updateRoomPlaylist();
+
+                drawablePlaylist.Items.BindCollectionChanged((_, __) => room.Playlist = drawablePlaylist.Items.ToArray());
             }
+
+            private void onRoomPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(Room.Name):
+                        updateRoomName();
+                        break;
+
+                    case nameof(Room.Type):
+                        updateRoomName();
+                        break;
+
+                    case nameof(Room.QueueMode):
+                        updateRoomQueueMode();
+                        break;
+
+                    case nameof(Room.Password):
+                        updateRoomPassword();
+                        break;
+
+                    case nameof(Room.AutoSkip):
+                        updateRoomAutoSkip();
+                        break;
+
+                    case nameof(Room.MaxParticipants):
+                        updateRoomMaxParticipants();
+                        break;
+
+                    case nameof(Room.AutoStartDuration):
+                        updateRoomAutoStartDuration();
+                        break;
+
+                    case nameof(Room.Playlist):
+                        updateRoomPlaylist();
+                        break;
+                }
+            }
+
+            private void updateRoomName()
+                => NameField.Text = room.Name;
+
+            private void updateRoomType()
+                => TypePicker.Current.Value = room.Type;
+
+            private void updateRoomQueueMode()
+                => QueueModeDropdown.Current.Value = room.QueueMode;
+
+            private void updateRoomPassword()
+                => PasswordTextBox.Text = room.Password ?? string.Empty;
+
+            private void updateRoomAutoSkip()
+                => AutoSkipCheckbox.Current.Value = room.AutoSkip;
+
+            private void updateRoomMaxParticipants()
+                => MaxParticipantsField.Text = room.MaxParticipants?.ToString();
+
+            private void updateRoomAutoStartDuration()
+                => startModeDropdown.Current.Value = (StartMode)room.AutoStartDuration.TotalSeconds;
+
+            private void updateRoomPlaylist()
+                => drawablePlaylist.Items.ReplaceRange(0, drawablePlaylist.Items.Count, room.Playlist);
 
             protected override void Update()
             {
                 base.Update();
 
-                ApplyButton.Enabled.Value = Playlist.Count > 0 && NameField.Text.Length > 0 && !operationInProgress.Value;
+                ApplyButton.Enabled.Value = room.Playlist.Count > 0 && NameField.Text.Length > 0 && !operationInProgress.Value;
+                playlistContainer.Alpha = room.RoomID == null ? 1 : 0;
             }
 
             private void apply()
@@ -379,8 +461,6 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                 Debug.Assert(applyingSettingsOperation == null);
                 applyingSettingsOperation = ongoingOperationTracker.BeginOperation();
 
-                TimeSpan autoStartDuration = TimeSpan.FromSeconds((int)startModeDropdown.Current.Value);
-
                 // If the client is already in a room, update via the client.
                 // Otherwise, update the room directly in preparation for it to be submitted to the API on match creation.
                 if (client.Room != null)
@@ -390,7 +470,8 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                               password: PasswordTextBox.Text,
                               matchType: TypePicker.Current.Value,
                               queueMode: QueueModeDropdown.Current.Value,
-                              autoStartDuration: autoStartDuration)
+                              autoStartDuration: TimeSpan.FromSeconds((int)startModeDropdown.Current.Value),
+                              autoSkip: AutoSkipCheckbox.Current.Value)
                           .ContinueWith(t => Schedule(() =>
                           {
                               if (t.IsCompletedSuccessfully)
@@ -401,24 +482,25 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                 }
                 else
                 {
-                    room.Name.Value = NameField.Text;
-                    room.Type.Value = TypePicker.Current.Value;
-                    room.Password.Value = PasswordTextBox.Current.Value;
-                    room.QueueMode.Value = QueueModeDropdown.Current.Value;
-                    room.AutoStartDuration.Value = autoStartDuration;
+                    room.Name = NameField.Text;
+                    room.Type = TypePicker.Current.Value;
+                    room.Password = PasswordTextBox.Current.Value;
+                    room.QueueMode = QueueModeDropdown.Current.Value;
+                    room.AutoStartDuration = TimeSpan.FromSeconds((int)startModeDropdown.Current.Value);
+                    room.AutoSkip = AutoSkipCheckbox.Current.Value;
 
                     if (int.TryParse(MaxParticipantsField.Text, out int max))
-                        room.MaxParticipants.Value = max;
+                        room.MaxParticipants = max;
                     else
-                        room.MaxParticipants.Value = null;
+                        room.MaxParticipants = null;
 
-                    manager?.CreateRoom(room, onSuccess, onError);
+                    manager.CreateRoom(room, onSuccess, onError);
                 }
             }
 
             private void hideError() => ErrorText.FadeOut(50);
 
-            private void onSuccess(Room room)
+            private void onSuccess(Room room) => Schedule(() =>
             {
                 Debug.Assert(applyingSettingsOperation != null);
 
@@ -426,9 +508,9 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 
                 applyingSettingsOperation.Dispose();
                 applyingSettingsOperation = null;
-            }
+            });
 
-            private void onError(string text)
+            private void onError(string text) => Schedule(() =>
             {
                 Debug.Assert(applyingSettingsOperation != null);
 
@@ -438,7 +520,7 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                 if (text.StartsWith(not_found_prefix, StringComparison.Ordinal))
                 {
                     ErrorText.Text = "The selected beatmap is not available online.";
-                    CurrentPlaylistItem.Value.MarkInvalid();
+                    SelectedItem.Value?.MarkInvalid();
                 }
                 else
                 {
@@ -449,26 +531,35 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 
                 applyingSettingsOperation.Dispose();
                 applyingSettingsOperation = null;
+            });
+
+            protected override void Dispose(bool isDisposing)
+            {
+                base.Dispose(isDisposing);
+                room.PropertyChanged -= onRoomPropertyChanged;
             }
         }
 
-        public class CreateOrUpdateButton : TriangleButton
+        public partial class CreateOrUpdateButton : RoundedButton
         {
-            [Resolved(typeof(Room), nameof(Room.RoomID))]
-            private Bindable<long?> roomId { get; set; }
+            private readonly Room room;
 
-            protected override void LoadComplete()
+            public CreateOrUpdateButton(Room room)
             {
-                base.LoadComplete();
-                roomId.BindValueChanged(id => Text = id.NewValue == null ? "Create" : "Update", true);
+                this.room = room;
             }
 
             [BackgroundDependencyLoader]
             private void load(OsuColour colours)
             {
-                BackgroundColour = colours.Yellow;
-                Triangles.ColourLight = colours.YellowLight;
-                Triangles.ColourDark = colours.YellowDark;
+                BackgroundColour = colours.YellowDark;
+            }
+
+            protected override void Update()
+            {
+                base.Update();
+
+                Text = room.RoomID == null ? "Create" : "Update";
             }
         }
 
@@ -477,17 +568,20 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
             [Description("Off")]
             Off = 0,
 
+            [Description("10 seconds")]
+            Seconds10 = 10,
+
             [Description("30 seconds")]
-            Seconds_30 = 30,
+            Seconds30 = 30,
 
             [Description("1 minute")]
-            Seconds_60 = 60,
+            Seconds60 = 60,
 
             [Description("3 minutes")]
-            Seconds_180 = 180,
+            Seconds180 = 180,
 
             [Description("5 minutes")]
-            Seconds_300 = 300
+            Seconds300 = 300
         }
     }
 }

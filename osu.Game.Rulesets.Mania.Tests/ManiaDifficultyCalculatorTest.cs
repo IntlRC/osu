@@ -1,7 +1,5 @@
-// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
-
-#nullable disable
 
 using NUnit.Framework;
 using osu.Game.Beatmaps;
@@ -14,13 +12,13 @@ namespace osu.Game.Rulesets.Mania.Tests
 {
     public class ManiaDifficultyCalculatorTest : DifficultyCalculatorTest
     {
-        protected override string ResourceAssembly => "osu.Game.Rulesets.Mania";
+        protected override string ResourceAssembly => "osu.Game.Rulesets.Mania.Tests";
 
-        [TestCase(2.3449735700206298d, 242, "diffcalc-test")]
+        [TestCase(2.3493769750220914d, 242, "diffcalc-test")]
         public void Test(double expectedStarRating, int expectedMaxCombo, string name)
             => base.Test(expectedStarRating, expectedMaxCombo, name);
 
-        [TestCase(2.7879104989252959d, 242, "diffcalc-test")]
+        [TestCase(2.797245912537965d, 242, "diffcalc-test")]
         public void TestClockRateAdjusted(double expectedStarRating, int expectedMaxCombo, string name)
             => Test(expectedStarRating, expectedMaxCombo, name, new ManiaModDoubleTime());
 

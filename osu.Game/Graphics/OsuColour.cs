@@ -1,10 +1,9 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using System;
 using osu.Framework.Extensions.Color4Extensions;
+using osu.Framework.Graphics.Colour;
 using osu.Game.Beatmaps;
 using osu.Game.Online.Rooms;
 using osu.Game.Overlays;
@@ -22,38 +21,8 @@ namespace osu.Game.Graphics
         public static Color4 Gray(byte amt) => new Color4(amt, amt, amt, 255);
 
         /// <summary>
-        /// Retrieves the colour for a <see cref="DifficultyRating"/>.
+        /// Retrieves the colour for a given point in the star range.
         /// </summary>
-        /// <remarks>
-        /// Sourced from the @diff-{rating} variables in https://github.com/ppy/osu-web/blob/71fbab8936d79a7929d13854f5e854b4f383b236/resources/assets/less/variables.less.
-        /// </remarks>
-        public Color4 ForDifficultyRating(DifficultyRating difficulty, bool useLighterColour = false)
-        {
-            switch (difficulty)
-            {
-                case DifficultyRating.Easy:
-                    return Color4Extensions.FromHex("4ebfff");
-
-                case DifficultyRating.Normal:
-                    return Color4Extensions.FromHex("66ff91");
-
-                case DifficultyRating.Hard:
-                    return Color4Extensions.FromHex("f7e85d");
-
-                case DifficultyRating.Insane:
-                    return Color4Extensions.FromHex("ff7e68");
-
-                case DifficultyRating.Expert:
-                    return Color4Extensions.FromHex("fe3c71");
-
-                case DifficultyRating.ExpertPlus:
-                    return Color4Extensions.FromHex("6662dd");
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(difficulty));
-            }
-        }
-
         public Color4 ForStarDifficulty(double starDifficulty) => ColourUtils.SampleFromLinearGradient(new[]
         {
             (0.1f, Color4Extensions.FromHex("aaaaaa")),
@@ -94,34 +63,48 @@ namespace osu.Game.Graphics
                 case ScoreRank.C:
                     return Color4Extensions.FromHex(@"ff8e5d");
 
-                default:
+                case ScoreRank.D:
                     return Color4Extensions.FromHex(@"ff5a5a");
+
+                case ScoreRank.F:
+                default:
+                    return Color4Extensions.FromHex(@"3f3f3f");
             }
         }
 
         /// <summary>
         /// Retrieves the colour for a <see cref="HitResult"/>.
         /// </summary>
-        public Color4 ForHitResult(HitResult judgement)
+        public Color4 ForHitResult(HitResult result)
         {
-            switch (judgement)
+            switch (result)
             {
-                case HitResult.Perfect:
-                case HitResult.Great:
-                    return Blue;
+                case HitResult.IgnoreMiss:
+                case HitResult.SmallTickMiss:
+                    return Color4.Gray;
 
-                case HitResult.Ok:
-                case HitResult.Good:
-                    return Green;
+                case HitResult.Miss:
+                case HitResult.LargeTickMiss:
+                case HitResult.ComboBreak:
+                    return Red;
 
                 case HitResult.Meh:
                     return Yellow;
 
-                case HitResult.Miss:
-                    return Red;
+                case HitResult.Ok:
+                    return Green;
+
+                case HitResult.Good:
+                    return GreenLight;
+
+                case HitResult.SmallTickHit:
+                case HitResult.LargeTickHit:
+                case HitResult.SliderTailHit:
+                case HitResult.Great:
+                    return Blue;
 
                 default:
-                    return Color4.White;
+                    return BlueLight;
             }
         }
 
@@ -187,7 +170,7 @@ namespace osu.Game.Graphics
                     return Pink1;
 
                 case ModType.System:
-                    return Gray7;
+                    return Yellow;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(modType), modType, "Unknown mod type");
@@ -209,6 +192,62 @@ namespace osu.Game.Graphics
 
                 default:
                     return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the accent colour representing a <see cref="Room"/>'s current status.
+        /// </summary>
+        public Color4 ForRoomStatus(Room room)
+        {
+            if (room.HasEnded)
+                return YellowDarker;
+
+            switch (room.Status)
+            {
+                case RoomStatus.Playing:
+                    return Purple;
+
+                default:
+                    if (room.HasPassword)
+                        return GreenDark;
+
+                    return GreenLight;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves colour for a <see cref="RankingTier"/>.
+        /// See https://www.figma.com/file/YHWhp9wZ089YXgB7pe6L1k/Tier-Colours
+        /// </summary>
+        public ColourInfo ForRankingTier(RankingTier tier)
+        {
+            switch (tier)
+            {
+                default:
+                case RankingTier.Iron:
+                    return Color4Extensions.FromHex(@"BAB3AB");
+
+                case RankingTier.Bronze:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"B88F7A"), Color4Extensions.FromHex(@"855C47"));
+
+                case RankingTier.Silver:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"E0E0EB"), Color4Extensions.FromHex(@"A3A3C2"));
+
+                case RankingTier.Gold:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"F0E4A8"), Color4Extensions.FromHex(@"E0C952"));
+
+                case RankingTier.Platinum:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"A8F0EF"), Color4Extensions.FromHex(@"52E0DF"));
+
+                case RankingTier.Rhodium:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"D9F8D3"), Color4Extensions.FromHex(@"A0CF96"));
+
+                case RankingTier.Radiant:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"97DCFF"), Color4Extensions.FromHex(@"ED82FF"));
+
+                case RankingTier.Lustrous:
+                    return ColourInfo.GradientVertical(Color4Extensions.FromHex(@"FFE600"), Color4Extensions.FromHex(@"ED82FF"));
             }
         }
 
@@ -389,5 +428,7 @@ namespace osu.Game.Graphics
 
         public Color4 SpotlightColour => Green2;
         public Color4 FeaturedArtistColour => Blue2;
+
+        public Color4 DangerousButtonColour => Pink3;
     }
 }

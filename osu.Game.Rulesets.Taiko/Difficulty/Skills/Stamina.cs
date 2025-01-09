@@ -1,84 +1,55 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
+using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
+using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Taiko.Objects;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 {
     /// <summary>
     /// Calculates the stamina coefficient of taiko difficulty.
     /// </summary>
-    /// <remarks>
-    /// The reference play style chosen uses two hands, with full alternating (the hand changes after every hit).
-    /// </remarks>
-    public class Stamina : StrainDecaySkill
+    public class Stamina : StrainSkill
     {
-        protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 0.4;
+        private double skillMultiplier => 1.1;
+        private double strainDecayBase => 0.4;
 
-        private readonly SingleKeyStamina[] centreKeyStamina =
-        {
-            new SingleKeyStamina(),
-            new SingleKeyStamina()
-        };
+        private readonly bool singleColourStamina;
 
-        private readonly SingleKeyStamina[] rimKeyStamina =
-        {
-            new SingleKeyStamina(),
-            new SingleKeyStamina()
-        };
-
-        /// <summary>
-        /// Current index into <see cref="centreKeyStamina" /> for a centre hit.
-        /// </summary>
-        private int centreKeyIndex;
-
-        /// <summary>
-        /// Current index into <see cref="rimKeyStamina" /> for a rim hit.
-        /// </summary>
-        private int rimKeyIndex;
+        private double currentStrain;
 
         /// <summary>
         /// Creates a <see cref="Stamina"/> skill.
         /// </summary>
         /// <param name="mods">Mods for use in skill calculations.</param>
-        public Stamina(Mod[] mods)
+        /// <param name="singleColourStamina">Reads when Stamina is from a single coloured pattern.</param>
+        public Stamina(Mod[] mods, bool singleColourStamina)
             : base(mods)
         {
+            this.singleColourStamina = singleColourStamina;
         }
 
-        /// <summary>
-        /// Get the next <see cref="SingleKeyStamina"/> to use for the given <see cref="TaikoDifficultyHitObject"/>.
-        /// </summary>
-        /// <param name="current">The current <see cref="TaikoDifficultyHitObject"/>.</param>
-        private SingleKeyStamina getNextSingleKeyStamina(TaikoDifficultyHitObject current)
+        private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
-            // Alternate key for the same color.
-            if (current.HitType == HitType.Centre)
-            {
-                centreKeyIndex = (centreKeyIndex + 1) % 2;
-                return centreKeyStamina[centreKeyIndex];
-            }
+            currentStrain *= strainDecay(current.DeltaTime);
+            currentStrain += StaminaEvaluator.EvaluateDifficultyOf(current) * skillMultiplier;
 
-            rimKeyIndex = (rimKeyIndex + 1) % 2;
-            return rimKeyStamina[rimKeyIndex];
+            // Safely prevents previous strains from shifting as new notes are added.
+            var currentObject = current as TaikoDifficultyHitObject;
+            int index = currentObject?.Colour.MonoStreak?.HitObjects.IndexOf(currentObject) ?? 0;
+
+            if (singleColourStamina)
+                return currentStrain / (1 + Math.Exp(-(index - 10) / 2.0));
+
+            return currentStrain;
         }
 
-        protected override double StrainValueOf(DifficultyHitObject current)
-        {
-            if (!(current.BaseObject is Hit))
-            {
-                return 0.0;
-            }
-
-            TaikoDifficultyHitObject hitObject = (TaikoDifficultyHitObject)current;
-            return getNextSingleKeyStamina(hitObject).StrainValueOf(hitObject);
-        }
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => singleColourStamina ? 0 : currentStrain * strainDecay(time - current.Previous(0).StartTime);
     }
 }

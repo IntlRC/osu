@@ -1,8 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -12,13 +10,13 @@ using osuTK;
 
 namespace osu.Game.Tournament.Screens.Gameplay.Components
 {
-    public class MatchHeader : Container
+    public partial class MatchHeader : Container
     {
-        private TeamScoreDisplay teamDisplay1;
-        private TeamScoreDisplay teamDisplay2;
-        private TeamScoreDisplay teamDisplay3;
-        private TeamScoreDisplay teamDisplay4;
-        private DrawableTournamentHeaderLogo logo;
+        private TeamScoreDisplay teamDisplay1 = null!;
+        private TeamScoreDisplay teamDisplay2 = null!;
+        private TeamScoreDisplay teamDisplay3 = null!;
+        private TeamScoreDisplay teamDisplay4 = null!;
+        private DrawableTournamentHeaderLogo logo = null!;
 
         private bool showScores = true;
 
