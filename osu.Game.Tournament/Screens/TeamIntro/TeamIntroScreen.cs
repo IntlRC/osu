@@ -43,11 +43,11 @@ namespace osu.Game.Tournament.Screens.TeamIntro
             if (match.NewValue == null)
                 return;
 
-            const float y_flag_offset1 = 300;
+            const float y_flag_offset1 = 275;
 
             const float y_offset1 = 360;
 
-            const float y_flag_offset2 = 500;
+            const float y_flag_offset2 = 475;
 
             const float y_offset2 = 560;
 

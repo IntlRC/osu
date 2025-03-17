@@ -96,7 +96,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
                                     //        }
                                     //    }
                                     //},
-                                    teamText = new TournamentSpriteTextWithBackground
+                                    teamNameText = new TournamentSpriteTextWithBackground
                                     {
                                         Scale = new Vector2(0.5f),
                                         Origin = anchor,

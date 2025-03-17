@@ -50,7 +50,7 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
                 Children = new Drawable[]
                 {
                     team1Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 1" },
-                    team2Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 2" }
+                    team2Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 2" },
                     team3Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 3" },
                     team4Dropdown = new SettingsTeamDropdown(ladderInfo.Teams) { LabelText = "Team 4" },
                     roundDropdown = new SettingsRoundDropdown(ladderInfo.Rounds) { LabelText = "Round" },

@@ -128,7 +128,7 @@ namespace osu.Game.Tournament.Screens.Schedule
 
             var recent =
                 allMatches
-                    .Where(m => m.Completed.Value && m.Team1.Value != null && m.Team2.Value != null m.Team3.Value != null && m.Team4.Value != null && Math.Abs(m.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < days_for_displays)
+                    .Where(m => m.Completed.Value && m.Team1.Value != null && m.Team2.Value != null &&m.Team3.Value != null && m.Team4.Value != null && Math.Abs(m.Date.Value.DayOfYear - DateTimeOffset.UtcNow.DayOfYear) < days_for_displays)
                     .OrderByDescending(m => m.Date.Value)
                     .Take(8);
 
@@ -197,7 +197,7 @@ namespace osu.Game.Tournament.Screens.Schedule
                         {
                             Anchor = Anchor.CentreLeft,
                             Origin = Anchor.CentreLeft,
-                            Text = currentMatch.Value.Team1.Value?.FullName + " vs " + currentMatch.Value.Team2.Value?.FullName + " vs " + currentMatch.Value.Team3.Value?.FullName + " vs " + currentMatch.Value.Team4.Value?.FullName,
+                            Text = currentMatch.Value.Team1.Value?.Acronym + " vs " + currentMatch.Value.Team2.Value?.Acronym + " vs " + currentMatch.Value.Team3.Value?.Acronym + " vs " + currentMatch.Value.Team4.Value?.Acronym,
                             Font = OsuFont.Torus.With(size: 24, weight: FontWeight.SemiBold)
                         },
                         new FillFlowContainer

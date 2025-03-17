@@ -188,33 +188,32 @@ namespace osu.Game.Tournament.Screens.MapPool
             if (CurrentMatch.Value?.Round.Value == null)
                 return;
 
-            int totalBansRequired = CurrentMatch.Value.Round.Value.BanCount.Value * 2;
+            int totalBansRequired = CurrentMatch.Value.Round.Value.BanCount.Value * 4;
 
             TeamColour lastPickColour = CurrentMatch.Value.PicksBans.LastOrDefault()?.Team ?? TeamColour.Red;
 
             TeamColour nextColour;
 
-            var nextColour = (CurrentMatch.Value.PicksBans.LastOrDefault()?.Team ?? roll_winner) == TeamColour.Red ? TeamColour.Blue : CurrentMatch.Value.PicksBans.LastOrDefault()?.Team == TeamColour.Blue ? TeamColour.Green : CurrentMatch.Value.PicksBans.LastOrDefault()?.Team == TeamColour.Green ? TeamColour.Yellow : TeamColour.Red;
             bool hasAllBans = CurrentMatch.Value.PicksBans.Count(p => p.Type == ChoiceType.Ban) >= totalBansRequired;
 
             if (!hasAllBans)
             {
                 // Ban phase: switch teams every second ban.
-                nextColour = CurrentMatch.Value.PicksBans.Count % 2 == 1
+                nextColour = CurrentMatch.Value.PicksBans.Count % 4 == 1
                     ? getOppositeTeamColour(lastPickColour)
-                    : lastPickColour;
+                    : getOppositeTeamColour(lastPickColour);
             }
             else
             {
                 // Pick phase : switch teams every pick, except for the first pick which generally goes to the team that placed the last ban.
                 nextColour = pickType == ChoiceType.Pick
                     ? getOppositeTeamColour(lastPickColour)
-                    : lastPickColour;
+                    : getOppositeTeamColour(lastPickColour);
             }
 
             setMode(nextColour, hasAllBans ? ChoiceType.Pick : ChoiceType.Ban);
 
-            TeamColour getOppositeTeamColour(TeamColour colour) => colour == TeamColour.Red ? TeamColour.Blue : TeamColour.Red;
+            TeamColour getOppositeTeamColour(TeamColour colour) => colour == TeamColour.Red ? TeamColour.Blue : (colour == TeamColour.Blue ? TeamColour.Green : (colour == TeamColour.Green ? TeamColour.Yellow : TeamColour.Red));
         }
 
         protected override bool OnMouseDown(MouseDownEvent e)

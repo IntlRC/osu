@@ -34,28 +34,28 @@ namespace osu.Game.Tournament.Components
                     Children = new Drawable[]
                     {
                         new DrawableTeamTitleWithHeader(team, colour),
-                        new FillFlowContainer
-                        {
-                            AutoSizeAxes = Axes.Both,
-                            Direction = FillDirection.Horizontal,
-                            Padding = new MarginPadding { Left = 10 },
-                            Spacing = new Vector2(30),
-                            Children = new Drawable[]
-                            {
-                                new FillFlowContainer
-                                {
-                                    Direction = FillDirection.Vertical,
-                                    AutoSizeAxes = Axes.Both,
-                                    ChildrenEnumerable = players.Take(split).Select(createPlayerText),
-                                },
-                                new FillFlowContainer
-                                {
-                                    Direction = FillDirection.Vertical,
-                                    AutoSizeAxes = Axes.Both,
-                                    ChildrenEnumerable = players.Skip(split).Select(createPlayerText),
-                                },
-                            }
-                        },
+                        //new FillFlowContainer
+                        //{
+                        //    AutoSizeAxes = Axes.Both,
+                        //    Direction = FillDirection.Horizontal,
+                        //    Padding = new MarginPadding { Left = 10 },
+                        //    Spacing = new Vector2(30),
+                        //    Children = new Drawable[]
+                        //    {
+                        //        new FillFlowContainer
+                        //        {
+                        //            Direction = FillDirection.Vertical,
+                        //            AutoSizeAxes = Axes.Both,
+                        //            ChildrenEnumerable = players.Take(split).Select(createPlayerText),
+                        //        },
+                        //        new FillFlowContainer
+                        //        {
+                        //            Direction = FillDirection.Vertical,
+                        //            AutoSizeAxes = Axes.Both,
+                        //            ChildrenEnumerable = players.Skip(split).Select(createPlayerText),
+                        //        },
+                        //    }
+                        //},
                     }
                 },
             };

@@ -56,7 +56,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
         private void load()
         {
             RelativeSizeAxes = Axes.X;
-            Height = 595;
+            Height = 95;
             Children = new Drawable[]
             {
                 new FillFlowContainer
